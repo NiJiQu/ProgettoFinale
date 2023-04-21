@@ -1,0 +1,97 @@
+<div class="container-cards">
+  <ng-content></ng-content>
+<div class="container-pagination" *ngIf="pag != 'home'">
+  <div>
+    <strong>{{ricettePerPagina}}</strong> Ricette / su un totale di <strong>{{totRicette.length}}</strong> ricette <br />pagina corrente <strong>{{page}}</strong>
+  </div>
+  <!-- <ngb-pagination [collectionSize]="ricette.length * 2 + (ricettePerPagina * 2)" [(page)]="page" aria-label="Default pagination">
+  </ngb-pagination> -->
+
+  <p-paginator [rows]="ricettePerPagina" [totalRecords]="totRicette.length" (onPageChange)="paginate($event)" (rowsPerPageOptionsChange)="ricettePerPagina"></p-paginator>
+</div>
+
+  <div class="card" [ngClass]="ricetta.published? '': 'grigia'" *ngFor="let ricetta of ricette | slice: (page * ricettePerPagina) - ricettePerPagina : page * ricettePerPagina">
+    <div class="card-image" [ngClass]="ricetta.published? '': 'opaca'" [ngStyle]="{'background-image': 'url('+ ricetta.image + ')'}" (click)="inviaTitolo(ricetta.title)"></div>
+    <div class="card-body">
+      <h5 class="card-title">{{ricetta.title}}</h5>
+      <!-- <p class="card-text">{{ricetta.description | slice: 0:250}}...</p> -->
+      <p class="card-text"><span [innerHTML]="ricetta.description |slice: 0:250"></span>...</p>
+      <div class="row">
+        <h4 class="difficolta-title">Difficoltà: </h4>
+        <div class="row">
+          <img [src]="percorsoDifficolta+ricetta.difficulty + '.png'" class="difficolta" alt="difficolta">
+        </div>
+      </div>
+      <div *ngIf="ruolo === 'user' || ruolo === 'admin'">
+        <i class="pi pi-heart red" style="transform: scale(1.3);" (click)="preferiti(ricetta._id)" *ngIf="!isPreferite(ricetta._id)"></i>
+        <i class="pi pi-heart-fill red" style="transform: scale(1.3);" (click)="annulla(ricetta._id)" *ngIf="isPreferite(ricetta._id)"></i>
+      </div>
+      <div class="visualizza">
+        <a class="btn btn-primary" routerLink="/ricette/dettaglio/{{ricetta.title}}/{{ricetta._id}}">Visualizza</a>
+        <!-- <a class="btn btn-primary" [routerLink]="'dettaglio/' + recipe.title +'/'+ recipe._id">Dettaglio</a> -->
+      </div>
+
+      <div *ngIf="ruolo === 'admin'" class="d-flex" style="justify-content: space-around;">
+        <div class="icon-container">
+          <i class="pi pi-trash icon" (click)="openDelete(modaleElimina, ricetta)"></i>
+        </div>
+        <div class="icon-container">
+          <i class="pi pi-eye icon" *ngIf="ricetta.published" (click)="nascondi(ricetta)"></i>
+          <i class="pi pi-eye-slash icon" *ngIf="!ricetta.published" (click)="mostra(ricetta)"></i>
+        </div>
+        <div class="icon-container">
+          <i class="pi pi-file-edit icon" (click)="openModifica(modaleModifica, ricetta)"></i>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <ng-content select="[secondaIncursione]"></ng-content>
+  <div class="container-pagination" *ngIf="pag != 'home'">
+    <!-- <ngb-pagination [collectionSize]="totRicette.length * 2 + (ricettePerPagina * 2)" [(page)]="page" aria-label="Default pagination">
+    </ngb-pagination> -->
+    <p-paginator [rows]="ricettePerPagina" [totalRecords]="totRicette.length" (onPageChange)="paginate($event)"></p-paginator>
+  </div>
+
+</div>
+
+<ng-template #modaleElimina let-modal>
+  <div class="modal-header">
+    <h5>Attenzione</h5>
+    <button type="button" class="btn-close chiudi" aria-label="close" (click)="modal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <p><strong>Stai eliminando questa ricetta:</strong></p>
+    <div class="container-modal">
+      <img [src]="immagine" class="mostra">
+      <p><strong>{{titolo}}</strong></p>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn" style="color: grey;" (click)="modal.dismiss()">ANNULLA</button>
+    <button type="button" class="btn btn-primary" (click)="modal.close()" ngbAutoFocus>ELIMINA RICETTA</button>
+  </div>
+</ng-template>
+
+<ng-template #modaleModifica let-modal>
+  <div class="modal-header">
+    <h5>Attenzione</h5>
+    <button type="button" class="btn-close chiudi" aria-label="close" (click)="modal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <div class="d-flex" style="justify-content: center;">
+      <img [src]="immagine" class="mostra">
+    </div>
+    <app-modify1 [id]="this.id" (messaggio)="closeModal($event)"></app-modify1>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn" style="color: grey;" (click)="modal.dismiss()">ANNULLA</button>
+  </div>
+</ng-template>
+
+<p-toast position="bottom-right"></p-toast>
